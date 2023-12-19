@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from rest_framework.views import APIView
 from rest_framework import viewsets, status
@@ -11,6 +11,13 @@ from datetime import datetime, timedelta, date
 import random
 from faker import Faker 
 
+
+from .metrics_calculator import (
+    calculate_on_time_delivery_rate,
+    calculate_quality_rating_average,
+    calculate_average_response_time,
+    calculate_fulfillment_rate,
+)
 fake = Faker()
 
 
@@ -126,36 +133,77 @@ class HistoricalPerformanceViewSet(viewsets.ModelViewSet):
     queryset = HistoricalPerformance.objects.all()
     serializer_class = HistoricalPerformanceSerializer
 
-class VendorPerformanceAPIView(APIView):
-    def get(self, request, uid):
-        try:
-            vendor = Vendor.objects.get(uid=uid)
-        except Vendor.DoesNotExist:
-            return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Implement logic to calculate performance metrics for the vendor
-        # Replace this with your actual calculation logic
-        print(vendor.calculate_on_time_delivery_rate())
-        print(vendor.calculate_quality_rating_avg())
-        print(vendor.calculate_average_response_time())
-        print(vendor.calculate_fulfillment_rate())
+
+def VendorPerformanceAPIView(request):
+    # Fetch data from the database
+    issued_pos = PurchaseOrder.objects.filter(status='issued')
+    completed_pos = PurchaseOrder.objects.filter(status='completed')
+
+    # Calculate performance metrics
+    on_time_delivery_rate = calculate_on_time_delivery_rate(completed_pos, len(issued_pos))
+    quality_rating_average = calculate_quality_rating_average(completed_pos)
+    average_response_time = calculate_average_response_time(issued_pos)
+    fulfillment_rate = calculate_fulfillment_rate(issued_pos, completed_pos)
+
+    # Return results as a JSON response
+    response_data = {
+        'on_time_delivery_rate': on_time_delivery_rate,
+        'quality_rating_average': quality_rating_average,
+        'average_response_time': average_response_time,
+        'fulfillment_rate': fulfillment_rate,
+    }
+    return JsonResponse(response_data)
+
+# class VendorPerformanceAPIView(APIView):
+#     def get(self, request, uid):
+#         try:
+#             vendor = Vendor.objects.get(uid=uid)
+#         except Vendor.DoesNotExist:
+#             return Response({'error': 'Vendor not found'}, status=status.HTTP_404_NOT_FOUND)
+
+#         # Implement logic to calculate performance metrics for the vendor
+#         # Replace this with your actual calculation logic
+#         print(vendor.calculate_on_time_delivery_rate())
+#         print(vendor.calculate_quality_rating_avg())
+#         print(vendor.calculate_average_response_time())
+#         print(vendor.calculate_fulfillment_rate())
         
-        now = datetime.now()
+#         now = datetime.now()
 
      
 
 
-        performance_metrics = {
-            'date' : now,
-            'vendor' : vendor.uid,
-            'on_time_delivery_rate': vendor.calculate_on_time_delivery_rate(),
-            'quality_rating_avg': vendor.calculate_quality_rating_avg(),
-            'average_response_time': vendor.calculate_average_response_time(),
-            'fulfillment_rate': vendor.calculate_fulfillment_rate(),
-        }
+#         performance_metrics = {
+#             'date' : now,
+#             'vendor' : vendor.uid,
+#             'on_time_delivery_rate': vendor.calculate_on_time_delivery_rate(),
+#             'quality_rating_avg': vendor.calculate_quality_rating_avg(),
+#             'average_response_time': vendor.calculate_average_response_time(),
+#             'fulfillment_rate': vendor.calculate_fulfillment_rate(),
+#         }
 
-        serializer = HistoricalPerformanceSerializer(data=performance_metrics)
-        if serializer.is_valid():
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         serializer = HistoricalPerformanceSerializer(data=performance_metrics)
+#         if serializer.is_valid():
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+
+# def VendorPerformanceAPIView(request, uid):
+#     vendor = Vendor.objects.get(uid=uid)
+
+#     on_time_delivery_rate = calculate_on_time_delivery_rate(vendor)
+#     quality_rating_average = calculate_quality_rating_average(vendor)
+#     avg_response_time = calculate_average_response_time(vendor)
+#     fulfilment_rate = calculate_fulfilment_rate(vendor)
+
+#     # Rest of your view logic...
+#     return render(request, 'some_template.html', {
+#         'on_time_delivery_rate': on_time_delivery_rate,
+#         'quality_rating_average': quality_rating_average,
+#         'avg_response_time': avg_response_time,
+#         'fulfilment_rate': fulfilment_rate,
+#     })

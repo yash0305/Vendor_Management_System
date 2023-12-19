@@ -12,7 +12,8 @@ router.register(r'historical_performance', HistoricalPerformanceViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("home", index, name="index"),
-    path('vendors/<uuid:uid>/performance/', VendorPerformanceAPIView.as_view(), name='vendor-performance'),
+    # path('vendors/<uuid:uid>/performance/', VendorPerformanceAPIView.as_view(), name='vendor-performance'),
+    path('vendors/<uuid:uid>/performance/', VendorPerformanceAPIView, name='vendor-performance'),
     # Other URL patterns
 ]
 
