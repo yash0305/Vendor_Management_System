@@ -3,7 +3,7 @@ import uuid
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
-from django.db.models import Avg
+from django.db.models import Avg, Count, F, Case, When, Value
 
 
 class BaseModel(models.Model):
@@ -97,7 +97,7 @@ class PurchaseOrder(BaseModel):
         # Update the vendor's quality_rating_avg
         print(f"average_quality_rating : {average_quality_rating}")
 
-        return average_quality_rating
+        return average_quality_rating['avg_quality_rating']
         # if average_quality_rating is not None:
         #     self.vendor.quality_rating_avg = average_quality_rating
         #     self.vendor.save()
