@@ -15,7 +15,7 @@ class PurchaseOrderAdmin(admin.ModelAdmin):
 
 @admin.register(HistoricalPerformance)
 class HistoricalPerformanceAdmin(admin.ModelAdmin):
-    list_display = ('vendor_name', 'date', 'on_time_delivery_rate', 'quality_rating_avg', 'fulfillment_rate')
+    list_display = ('vendor_name', 'date', 'on_time_delivery_rate', 'quality_rating_avg', 'average_response_time', 'fulfillment_rate')
     list_filter = ('vendor__name', 'date')
 
     def vendor_name(self, obj):
