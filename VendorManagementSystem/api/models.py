@@ -48,17 +48,6 @@ class PurchaseOrder(BaseModel):
                 delivery_date__lte=self.delivery_date
             ).count()
            
-            # completed_purchases = PurchaseOrder.objects.filter(
-            #     vendor=self.vendor,
-            #     status='completed',
-            #     delivery_date__lte=self.delivery_date
-            # ).count()
-
-            # Count the total number of completed POs for that vendor
-            # total_completed_purchases = PurchaseOrder.objects.filter(
-            #     vendor=self.vendor,
-            #     status='completed'
-            # ).count()
 
             total_completed_purchases = vendor_instance.purchase_orders.filter(status='completed').count()
 
@@ -85,11 +74,7 @@ class PurchaseOrder(BaseModel):
             quality_rating__isnull=False
         )
 
-        # completed_purchases = PurchaseOrder.objects.filter(
-        #     vendor=self.vendor,
-        #     status='completed',
-        #     quality_rating__isnull=False
-        # )
+
 
         # Calculate the average quality rating for completed POs
         average_quality_rating = completed_purchases_with_rating.aggregate(avg_quality_rating=Avg('quality_rating'))['avg_quality_rating']
@@ -97,10 +82,8 @@ class PurchaseOrder(BaseModel):
         # Update the vendor's quality_rating_avg
         print(f"average_quality_rating : {average_quality_rating}")
 
-        return average_quality_rating['avg_quality_rating']
-        # if average_quality_rating is not None:
-        #     self.vendor.quality_rating_avg = average_quality_rating
-        #     self.vendor.save()
+        return average_quality_rating
+
 
     def update_average_response_time(self):
         # Get all acknowledged POs for the vendor
@@ -110,10 +93,7 @@ class PurchaseOrder(BaseModel):
         )
 
         # Calculate the time difference for each acknowledged PO
-        # start_time = datetime(2023, 12, 31, 12, 0, 0)
-        # end_time = datetime(2023, 12, 31, 15, 30, 0)
-        # duration = end_time - start_time
-        # total_seconds = duration.total_seconds()
+
         response_times = [
             (purchase.acknowledgment_date - purchase.issue_date).total_seconds() / 3600
             for purchase in acknowledged_purchases
@@ -124,22 +104,12 @@ class PurchaseOrder(BaseModel):
 
         print(f"average_response_time : {average_response_time}")
 
-        # # Update the vendor's average_response_time
-        # if average_response_time is not None:
-        #     self.vendor.average_response_time = average_response_time
-        #     self.vendor.save()
+
         return average_response_time
 
     def update_fulfillment_rate(self):
         vendor_instance = Vendor.objects.get(uid=self.vendor.uid)
 
-        # Count the number of completed POs without issues for the vendor
-        # fulfilled_purchases = self.purchase_orders.filter(
-        #     status='completed',
-        #     issue_date__isnull=False,
-        #     acknowledgment_date__isnull=False,
-        #     quality_rating__isnull=True  # Assuming 'quality_rating' indicates issues
-        # ).count()
 
         fulfilled_purchases = vendor_instance.purchase_orders.filter(
             status='Completed',
@@ -148,11 +118,7 @@ class PurchaseOrder(BaseModel):
             quality_rating__isnull=True
              ).count()
 
-        # Count the total number of POs issued to the vendor
         total_purchases = vendor_instance.purchase_orders.count()
-        # total_purchases = self.purchase_orders.filter(
-        #     issue_date__isnull=False
-        # ).count()
 
         # Avoid division by zero
         if total_purchases > 0:
@@ -161,23 +127,18 @@ class PurchaseOrder(BaseModel):
             fulfillment_rate = fulfilled_purchases / total_purchases
             print(f"fulfillment_rate : {fulfillment_rate}")
             return fulfillment_rate
-            # self.fulfillment_rate = fulfillment_rate
-            # self.save()
 
     def save(self, *args, **kwargs):
 
         super().save(*args, **kwargs)
-        # Calculate and update the on-time delivery rate each time a PO is saved
         try:
-            # getVendorHistoricalPerformance = HistoricalPerformance.objects.get(uid = self.vendor.uid)
-            # print(f"getVendorHistoricalPerformance : {getVendorHistoricalPerformance}")
 
             current_datetime = datetime.now()
             HistoricalPerformance.objects.update_or_create(
                 vendor = self.vendor,
                 date = current_datetime,
                 on_time_delivery_rate = self.calculate_ontime_delivery_rate(),
-                quality_rating_avg  = self.update_quality_rating_average() if self.status == 'completed' and self.quality_rating is not None else None,
+                quality_rating_avg  = self.update_quality_rating_average() if self.status == 'Completed' and self.quality_rating is not None else None,
                 average_response_time = self.update_average_response_time() if self.acknowledgment_date is not None else None,
                 fulfillment_rate = self.update_fulfillment_rate()
             )
