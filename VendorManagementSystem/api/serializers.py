@@ -18,4 +18,4 @@ class PurchaseOrderSerializer(serializers.ModelSerializer):
 class HistoricalPerformanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = HistoricalPerformance
-        fields = '__all__'
+        fields = ['on_time_delivery_rate' ,'quality_rating_avg' ,'average_response_time' ,'fulfillment_rate']
