@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from .models import Vendor, PurchaseOrder, HistoricalPerformance
 from .serializers import VendorSerializer, PurchaseOrderSerializer, HistoricalPerformanceSerializer
 from datetime import datetime
-
     
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")

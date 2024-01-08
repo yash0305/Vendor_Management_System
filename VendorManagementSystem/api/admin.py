@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vendor, PurchaseOrder, HistoricalPerformance
+from .models import Vendor, PurchaseOrder, HistoricalPerformance, VendorProfile
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -7,6 +7,16 @@ from import_export.admin import ImportExportModelAdmin
 class VendorAdmin(ImportExportModelAdmin):
     list_display = ('name', 'vendor_code', 'on_time_delivery_rate', 'quality_rating_avg', 'fulfillment_rate')
     search_fields = ('name', 'vendor_code')
+
+@admin.register(VendorProfile)
+class VendorAdmin(ImportExportModelAdmin):
+    list_display = ('get_vendor_name',)
+    search_fields = ('vendor__name',)
+
+    def get_vendor_name(self, obj):
+            return obj.vendor.name if obj.vendor else 'No vendor'  
+
+    get_vendor_name.short_description = 'Vendor'  
 
 @admin.register(PurchaseOrder)
 class PurchaseOrderAdmin(ImportExportModelAdmin):

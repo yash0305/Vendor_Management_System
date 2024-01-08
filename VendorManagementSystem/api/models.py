@@ -23,6 +23,8 @@ class Vendor(BaseModel):
     average_response_time = models.FloatField(default=0)
     fulfillment_rate = models.FloatField(default=0)
 
+class VendorProfile(BaseModel):
+    vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE)
 
 
 class PurchaseOrder(BaseModel):    
