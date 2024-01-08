@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Vendor, PurchaseOrder, HistoricalPerformance
 from import_export.admin import ImportExportModelAdmin
 
+
 @admin.register(Vendor)
 class VendorAdmin(ImportExportModelAdmin):
     list_display = ('name', 'vendor_code', 'on_time_delivery_rate', 'quality_rating_avg', 'fulfillment_rate')
@@ -23,3 +24,4 @@ class HistoricalPerformanceAdmin(ImportExportModelAdmin):
         return obj.vendor.name if obj.vendor else ''  # Return the vendor's name or empty string if vendor is None
 
     vendor_name.admin_order_field = 'vendor__name'  # Enable ordering by vendor name
+
